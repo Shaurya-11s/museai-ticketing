@@ -761,10 +761,11 @@ POLICIES:
 Keep responses friendly, concise (2-3 sentences), and helpful. If asked about booking, guide them through the process.`;
 
 // Function to call Gemini AI
+// Function to call Gemini AI (UPDATED FOR v1 API)
 async function callGeminiAI(userMessage) {
-    // Check if API key is set
-    if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-        console.warn('Gemini API key not set. Using fallback responses.');
+
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'AIzaSyBpAKOVddkpmhAIDMRLxK-5CL7BYBYsTgU') {
+        console.warn('Gemini API key not set.');
         return getFallbackResponse(userMessage);
     }
 
@@ -772,37 +773,52 @@ async function callGeminiAI(userMessage) {
         const response = await fetch(GEMINI_API_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `${AI_CONTEXT}\n\nUser question: ${userMessage}\n\nProvide a helpful response:`
-                    }]
-                }],
+                contents: [
+                    {
+                        role: "user",
+                        parts: [
+                            {
+                                text: `${AI_CONTEXT}\n\nUser Question: ${userMessage}`
+                            }
+                        ]
+                    }
+                ],
                 generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 200,
+                    maxOutputTokens: 200
                 }
             })
         });
 
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Gemini API Error:", errorText);
             throw new Error(`API Error: ${response.status}`);
         }
 
         const data = await response.json();
-        
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+
+        if (
+            data.candidates &&
+            data.candidates.length > 0 &&
+            data.candidates[0].content &&
+            data.candidates[0].content.parts &&
+            data.candidates[0].content.parts.length > 0
+        ) {
             return data.candidates[0].content.parts[0].text;
-        } else {
-            throw new Error('Invalid API response');
         }
+
+        return "I'm sorry, I couldn't generate a response right now.";
+
     } catch (error) {
-        console.error('Gemini AI Error:', error);
+        console.error("Gemini AI Error:", error);
         return getFallbackResponse(userMessage);
     }
 }
+
 
 // Fallback responses when AI is not available
 function getFallbackResponse(message) {
