@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuseAI - AI Powered Ticketing</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background: #0c0d17;
+    color: white;
+    overflow-x: hidden;
+}
+
+/* Animated Gradient Background */
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(128,0,255,0.25), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(0,200,255,0.25), transparent 40%);
+    animation: moveBackground 12s infinite alternate ease-in-out;
+    z-index: -3;
+}
+
+@keyframes moveBackground {
+    0% { transform: translate(0,0); }
+    100% { transform: translate(-50px, 50px); }
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -2;
+}
+
+/* Navbar */
+nav {
+    position: fixed;
+    width: 90%;
+    left: 5%;
+    top: 20px;
+    height: 70px;
+    backdrop-filter: blur(18px);
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    z-index: 1000;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.primary-btn {
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+    color: white;
+    transition: 0.3s ease;
+    font-weight: 600;
+}
+
+.primary-btn:hover {
+    transform: scale(1.07);
+    box-shadow: 0 0 25px rgba(0,200,255,0.6);
+}
+
+.secondary-btn {
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    background: transparent;
+    color: white;
+    transition: 0.3s ease;
+    font-weight: 600;
+}
+
+.secondary-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+/* Hero */
+.hero {
+    min-height: 100vh;
+    padding-top: 160px;
+    padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.hero h2 {
+    font-size: 40px;
+    margin-bottom: 20px;
+    min-height: 50px;
+}
+
+.hero p {
+    opacity: 0.7;
+    margin-bottom: 40px;
+    max-width: 600px;
+}
+
+/* Glass Card */
+.glass {
+    backdrop-filter: blur(25px);
+    background: rgba(255,255,255,0.05);
+    border-radius: 25px;
+    padding: 40px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 520px;
+}
+
+.language-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.lang-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.05);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s ease;
+    font-size: 14px;
+}
+
+.lang-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.lang-btn.active {
+    background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+    border-color: transparent;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    border: none;
+    outline: none;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-size: 14px;
+}
+
+input::placeholder, textarea::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+select option {
+    background: #1a1b2e;
+    color: white;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+    font-weight: 600;
+    color: white;
+    transition: 0.3s ease;
+}
+
+.submit-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0,200,255,0.5);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Chat */
+.chatbox {
+    margin-top: 25px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chatbox::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chatbox::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+}
+
+.message {
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 18px;
+    animation: fadeIn 0.3s ease;
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.bot {
+    background: rgba(255,255,255,0.1);
+    align-self: flex-start;
+}
+
+.user {
+    background: linear-gradient(135deg, rgba(123,47,247,0.3), rgba(0,198,255,0.3));
+    align-self: flex-end;
+    text-align: right;
+    margin-left: auto;
+}
+
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 18px;
+    width: fit-content;
+    align-self: flex-start;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.chat-input-area input {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.chat-input-area button {
+    padding: 14px 24px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.chat-input-area button:hover {
+    transform: scale(1.05);
+}
+
+.quick-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.quick-action-btn {
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.3s ease;
+}
+
+.quick-action-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* Analytics Dashboard */
+.analytics-section {
+    padding: 80px 5%;
+    text-align: center;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.stat-card {
+    backdrop-filter: blur(25px);
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(123,47,247,0.3);
+}
+
+.stat-card h3 {
+    font-size: 36px;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card p {
+    opacity: 0.7;
+    font-size: 14px;
+}
+
+.footer {
+    text-align: center;
+    padding: 40px;
+    opacity: 0.4;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    position: relative;
+    margin: 5% auto;
+    padding: 40px;
+    width: 90%;
+    max-width: 500px;
+    backdrop-filter: blur(25px);
+    background: rgba(255,255,255,0.05);
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: white;
+    opacity: 0.7;
+}
+
+.close:hover {
+    opacity: 1;
+}
+
+.payment-form {
+    margin-top: 20px;
+}
+
+.payment-methods {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.payment-method {
+    flex: 1;
+    padding: 15px;
+    border-radius: 15px;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    text-align: center;
+    transition: 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: rgba(123,47,247,0.5);
+}
+
+.payment-method.selected {
+    border-color: #7b2ff7;
+    background: rgba(123,47,247,0.2);
+}
+
+.processing {
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top: 4px solid #7b2ff7;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .hero h2 {
+        font-size: 28px;
+    }
+    
+    nav {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+        gap: 10px;
+    }
+    
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+    <h1>🧠 MuseAI</h1>
+    <div class="nav-links">
+        <button class="secondary-btn" onclick="openGallery()">🖼️ Gallery</button>
+        <button class="secondary-btn" onclick="scrollToAnalytics()">Analytics</button>
+        <button class="primary-btn" onclick="scrollToBooking()">Book Now</button>
+    </div>
+</nav>
+
+<section class="hero">
+    <h2 id="typingText"></h2>
+    <p>AI-powered multilingual ticket booking system with real-time pricing, payment integration & comprehensive analytics.</p>
+
+    <div class="glass" id="bookingSection">
+        <h3 style="margin-bottom:20px;">🎟️ AI Ticket Assistant</h3>
+        
+        <div class="language-selector">
+            <button class="lang-btn active" onclick="setLanguage('en')">🇬🇧 English</button>
+            <button class="lang-btn" onclick="setLanguage('hi')">🇮🇳 हिंदी</button>
+            <button class="lang-btn" onclick="setLanguage('es')">🇪🇸 Español</button>
+            <button class="lang-btn" onclick="setLanguage('fr')">🇫🇷 Français</button>
+            <button class="lang-btn" onclick="setLanguage('de')">🇩🇪 Deutsch</button>
+        </div>
+
+        <div id="formSection">
+            <input type="text" id="name" placeholder="Your Name">
+            <input type="email" id="email" placeholder="Email Address">
+            <select id="ticketType">
+                <option value="">Select Ticket Type</option>
+                <option value="General Entry">General Entry - ₹200</option>
+                <option value="Exhibition Show">Exhibition Show - ₹350</option>
+                <option value="Premium Guided Tour">Premium Guided Tour - ₹600</option>
+                <option value="Student Pass">Student Pass - ₹150</option>
+                <option value="Family Package">Family Package (4 tickets) - ₹700</option>
+            </select>
+            <input type="number" id="quantity" placeholder="Number of Tickets" min="1" max="10">
+            <input type="date" id="visitDate" min="">
+
+            <button class="submit-btn" onclick="startChatBot()">🤖 Start Booking with AI</button>
+        </div>
+
+        <div class="chatbox" id="chatbox" style="display:none;"></div>
+        
+        <div class="chat-input-area" id="chatInput" style="display:none;">
+            <input type="text" id="userMessage" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+        <div class="quick-actions" id="quickActions" style="display:none;"></div>
+    </div>
+</section>
+
+<!-- Analytics Section -->
+<section class="analytics-section" id="analyticsSection">
+    <h2 style="font-size: 36px; margin-bottom: 20px;">📊 Real-Time Analytics</h2>
+    <p style="opacity: 0.7; margin-bottom: 40px;">Monitor booking trends and visitor insights</p>
+    
+    <div class="analytics-grid">
+        <div class="stat-card">
+            <h3 id="totalBookings">0</h3>
+            <p>Total Bookings Today</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="totalRevenue">₹0</h3>
+            <p>Revenue Generated</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="avgBookingTime">0s</h3>
+            <p>Avg. Booking Time</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="popularTicket">-</h3>
+            <p>Most Popular Ticket</p>
+        </div>
+    </div>
+</section>
+
+<div class="footer">
+    © 2026 MuseAI - Smart Museum Ticketing Platform
+</div>
+
+<!-- Gallery Modal -->
+<div id="galleryModal" class="modal">
+    <div class="modal-content" style="max-width: 900px;">
+        <span class="close" onclick="closeGallery()">&times;</span>
+        <h2 style="margin-bottom: 30px;">🏛️ Museum Gallery</h2>
+        
+        <div style="margin-bottom: 30px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="lang-btn active" onclick="filterGallery('all')">All</button>
+                <button class="lang-btn" onclick="filterGallery('images')">📷 Images</button>
+                <button class="lang-btn" onclick="filterGallery('videos')">🎥 Videos</button>
+            </div>
+        </div>
+        
+        <div id="galleryContent" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-height: 500px; overflow-y: auto;">
+            <!-- Images -->
+            <div class="gallery-item" data-type="images">
+                <img src="https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?w=400" style="width: 100%; border-radius: 15px; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Ancient Artifacts</p>
+            </div>
+            
+            <div class="gallery-item" data-type="images">
+                <img src="https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=400" style="width: 100%; border-radius: 15px; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Main Exhibition Hall</p>
+            </div>
+            
+            <div class="gallery-item" data-type="images">
+                <img src="https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=400" style="width: 100%; border-radius: 15px; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Sculpture Gallery</p>
+            </div>
+            
+            <div class="gallery-item" data-type="images">
+                <img src="https://images.unsplash.com/photo-1595433707802-6b2626ef1c91?w=400" style="width: 100%; border-radius: 15px; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Historical Collections</p>
+            </div>
+            
+            <div class="gallery-item" data-type="images">
+                <img src="https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=400" style="width: 100%; border-radius: 15px; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Art Exhibitions</p>
+            </div>
+            
+            <div class="gallery-item" data-type="images">
+                <img src="https://images.unsplash.com/photo-1577655197620-704858b270ac?w=400" style="width: 100%; border-radius: 15px; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Museum Architecture</p>
+            </div>
+            
+            <!-- Videos -->
+            <div class="gallery-item" data-type="videos">
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px;">
+                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Museum Tour 2024</p>
+            </div>
+            
+            <div class="gallery-item" data-type="videos">
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px;">
+                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Special Exhibitions</p>
+            </div>
+            
+            <div class="gallery-item" data-type="videos">
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px;">
+                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Behind The Scenes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePaymentModal()">&times;</span>
+        <h2 style="margin-bottom: 20px;">💳 Secure Payment</h2>
+        
+        <div id="paymentDetails"></div>
+        
+        <div class="payment-form" id="paymentFormSection">
+            <div class="payment-methods">
+                <div class="payment-method" onclick="selectPaymentMethod('card')">
+                    <div style="font-size: 24px;">💳</div>
+                    <div style="font-size: 12px; margin-top: 5px;">Card</div>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('upi')">
+                    <div style="font-size: 24px;">📱</div>
+                    <div style="font-size: 12px; margin-top: 5px;">UPI</div>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('wallet')">
+                    <div style="font-size: 24px;">👛</div>
+                    <div style="font-size: 12px; margin-top: 5px;">Wallet</div>
+                </div>
+            </div>
+            
+            <div id="cardDetails" style="display:none;">
+                <input type="text" placeholder="Card Number" maxlength="16">
+                <div style="display:flex; gap:10px;">
+                    <input type="text" placeholder="MM/YY" maxlength="5" style="width:50%;">
+                    <input type="text" placeholder="CVV" maxlength="3" style="width:50%;">
+                </div>
+            </div>
+            
+            <div id="upiDetails" style="display:none;">
+                <input type="text" placeholder="UPI ID (e.g., name@upi)">
+            </div>
+            
+            <div id="walletDetails" style="display:none;">
+                <input type="text" placeholder="Wallet Phone Number">
+            </div>
+            
+            <button class="submit-btn" onclick="processPayment()" id="payButton" style="margin-top:20px;">Pay Now</button>
+        </div>
+        
+        <div id="processingSection" style="display:none;">
+            <div class="processing">
+                <div class="spinner"></div>
+                <p>Processing your payment...</p>
+                <p style="font-size:12px; opacity:0.7; margin-top:10px;">Please do not close this window</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+// Global Variables
+let currentLanguage = 'en';
+let conversationState = 'initial';
+let bookingData = {};
+let selectedPaymentMethod = 'card';
+let analytics = {
+    totalBookings: 0,
+    totalRevenue: 0,
+    bookingTimes: [],
+    ticketCounts: {}
+};
+
+// ===== GOOGLE GEMINI AI CONFIGURATION =====
+// Replace this with your actual API key from https://makersuite.google.com/app/apikey
+const GEMINI_API_KEY = 'AIzaSyBpAKOVddkpmhAIDMRLxK-5CL7BYBYsTgU';
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+
+// AI Context for museum assistant
+const AI_CONTEXT = `You are a helpful AI assistant for MuseAI, a modern museum ticketing system. Your role is to help visitors with:
+
+TICKET INFORMATION:
+- General Entry: ₹200 (basic museum access)
+- Exhibition Show: ₹350 (includes special exhibitions and guided tours)
+- Premium Guided Tour: ₹600 (personalized guided experience)
+- Student Pass: ₹150 (with valid student ID)
+- Family Package: ₹700 (4 tickets, saves ₹100)
+
+MUSEUM DETAILS:
+- Hours: 9:00 AM - 6:00 PM, Tuesday to Sunday (Closed Mondays)
+- Last entry: 5:30 PM
+- Location: 123 Heritage Street, Museum Quarter, Delhi 110001
+
+EXHIBITIONS:
+The Exhibition Show ticket includes:
+- Ancient Civilization Gallery (Egyptian, Roman, Greek artifacts)
+- Modern Art Collection (Contemporary paintings and sculptures)
+- Interactive Science Displays (Hands-on exhibits for all ages)
+- Historical Artifacts Wing (Local and regional history)
+- Special Rotating Exhibitions (Changes quarterly)
+
+FACILITIES:
+- Free WiFi throughout the museum
+- Cafeteria & Restaurant
+- Gift Shop with souvenirs
+- Wheelchair accessible
+- Audio guides available (₹50 rental)
+- Free parking
+- Lockers available
+- Photography allowed (no flash)
+
+POLICIES:
+- Free cancellation up to 24 hours before visit
+- Date changes allowed once per booking
+- No refunds for no-shows
+- Children under 5: Free entry
+- Senior citizens (60+): 20% discount
+
+Keep responses friendly, concise (2-3 sentences), and helpful. If asked about booking, guide them through the process.`;
+
+// Function to call Gemini AI
+async function callGeminiAI(userMessage) {
+    // Check if API key is set
+    if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+        console.warn('Gemini API key not set. Using fallback responses.');
+        return getFallbackResponse(userMessage);
+    }
+
+    try {
+        const response = await fetch(GEMINI_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: `${AI_CONTEXT}\n\nUser question: ${userMessage}\n\nProvide a helpful response:`
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 200,
+                }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            return data.candidates[0].content.parts[0].text;
+        } else {
+            throw new Error('Invalid API response');
+        }
+    } catch (error) {
+        console.error('Gemini AI Error:', error);
+        return getFallbackResponse(userMessage);
+    }
+}
+
+// Fallback responses when AI is not available
+function getFallbackResponse(message) {
+    const lowerMsg = message.toLowerCase();
+    
+    // Help queries
+    if (lowerMsg.includes("help") || lowerMsg.includes("मदद")) {
+        return "I'm here to help! You can ask me about:<br>• Ticket types and pricing<br>• Museum hours<br>• Exhibition details<br>• Facilities available<br>• How to restart booking";
+    } 
+    // Price queries
+    else if (lowerMsg.includes("price") || lowerMsg.includes("cost") || lowerMsg.includes("rate") || lowerMsg.includes("fee")) {
+        return "Our ticket prices are:<br><br>🎟️ <strong>General Entry:</strong> ₹200<br>🎨 <strong>Exhibition Show:</strong> ₹350<br>⭐ <strong>Premium Guided Tour:</strong> ₹600<br>🎓 <strong>Student Pass:</strong> ₹150<br>👨‍👩‍👧‍👦 <strong>Family Package (4 tickets):</strong> ₹700";
+    } 
+    // Hours/Time queries
+    else if (lowerMsg.includes("hours") || lowerMsg.includes("time") || lowerMsg.includes("open") || lowerMsg.includes("close")) {
+        return "🕐 <strong>Museum Hours:</strong><br><br>Tuesday - Sunday: 9:00 AM - 6:00 PM<br>Monday: Closed<br><br>Last entry is at 5:30 PM.";
+    } 
+    // Exhibition queries
+    else if (lowerMsg.includes("exhibition") || lowerMsg.includes("show") || lowerMsg.includes("display") || lowerMsg.includes("inside")) {
+        return "🎨 Our Exhibition Show ticket (₹350) includes:<br><br>• Ancient Civilization Gallery - Egyptian, Roman & Greek artifacts<br>• Modern Art Collection - Contemporary paintings & sculptures<br>• Interactive Science Displays - Hands-on exhibits<br>• Historical Artifacts Wing - Local history<br>• Special Rotating Exhibitions - Changes quarterly<br><br>All with guided tours!";
+    } 
+    // Facilities queries
+    else if (lowerMsg.includes("facilit") || lowerMsg.includes("amenity") || lowerMsg.includes("service")) {
+        return "🏛️ Museum Facilities:<br><br>• Free WiFi<br>• Cafeteria & Restaurant<br>• Gift Shop<br>• Wheelchair accessible<br>• Audio guides (₹50)<br>• Free parking<br>• Lockers available<br>• Photography allowed (no flash)";
+    } 
+    // Student discount queries
+    else if (lowerMsg.includes("student") || lowerMsg.includes("discount") || lowerMsg.includes("concession")) {
+        return "🎓 Yes! We offer student discounts:<br><br>Student Pass: ₹150 (Regular: ₹200)<br><br>Please bring valid student ID for verification at entry.";
+    } 
+    // Family package queries
+    else if (lowerMsg.includes("family") || lowerMsg.includes("group") || lowerMsg.includes("package")) {
+        return "👨‍👩‍👧‍👦 Family Package Details:<br><br>Price: ₹700 for 4 tickets<br>Saves: ₹100 (vs individual tickets)<br><br>Perfect for families! You can also book additional tickets at regular price.";
+    } 
+    // Location/Direction queries
+    else if (lowerMsg.includes("location") || lowerMsg.includes("address") || lowerMsg.includes("direction") || lowerMsg.includes("reach")) {
+        return "📍 Museum Location:<br><br>123 Heritage Street, Museum Quarter<br>City Center, Delhi 110001<br><br>🚇 Nearest Metro: Museum Gate Station<br>🚌 Bus Routes: 42, 67, 89<br>🚗 Parking: Available on-site";
+    } 
+    // Photography queries
+    else if (lowerMsg.includes("photo") || lowerMsg.includes("camera") || lowerMsg.includes("picture")) {
+        return "📸 Photography Policy:<br><br>✅ Photography allowed in most areas<br>❌ No flash photography<br>❌ No tripods without permission<br>❌ Some special exhibits may restrict photos<br><br>Please respect signage in restricted areas.";
+    } 
+    // Booking/Cancel queries
+    else if (lowerMsg.includes("cancel") || lowerMsg.includes("refund") || lowerMsg.includes("change")) {
+        return "🔄 Booking Changes & Cancellation:<br><br>• Free cancellation up to 24 hours before visit<br>• Date changes allowed once<br>• Refunds processed in 5-7 business days<br><br>Contact: support@museai.com";
+    } 
+    // Thank you
+    else if (lowerMsg.includes("thank") || lowerMsg.includes("thanks")) {
+        return "You're welcome! 😊 Is there anything else I can help you with?";
+    } 
+    // Greetings
+    else if (lowerMsg.includes("hello") || lowerMsg.includes("hi") || lowerMsg.includes("hey") || lowerMsg.includes("namaste")) {
+        return "Hello! 👋 Welcome to MuseAI. How can I assist you with your museum visit today?";
+    }
+    // Default response
+    else {
+        return "I'm here to help! I can answer questions about:<br><br>• Ticket prices and types<br>• Museum hours and location<br>• Exhibitions and facilities<br>• Student discounts<br>• Photography policy<br><br>What would you like to know?";
+    }
+}
+
+// Load analytics from localStorage
+function loadAnalytics() {
+    const saved = localStorage.getItem('museai_analytics');
+    if (saved) {
+        analytics = JSON.parse(saved);
+        updateAnalyticsDashboard();
+    }
+}
+
+function saveAnalytics() {
+    localStorage.setItem('museai_analytics', JSON.stringify(analytics));
+}
+
+// Multilingual Support
+const translations = {
+    en: {
+        greeting: "Hello! I'm your AI ticket assistant. How can I help you today?",
+        namePrompt: "What's your name?",
+        emailPrompt: "What's your email address?",
+        ticketPrompt: "Which ticket would you like to book?",
+        quantityPrompt: "How many tickets do you need?",
+        datePrompt: "When would you like to visit?",
+        confirmation: "Great! Let me confirm your booking details:",
+        total: "Total Amount",
+        confirmBooking: "Shall I proceed with the booking?",
+        paymentSuccess: "Payment Successful! 🎉",
+        ticketSent: "Your e-tickets have been sent to your email. Enjoy your visit! 🏛️",
+        error: "Oops! Something went wrong. Please try again.",
+        yes: "Yes, Confirm",
+        no: "No, Cancel",
+        help: "Need Help?",
+        restart: "Start Over"
+    },
+    hi: {
+        greeting: "नमस्ते! मैं आपका AI टिकट सहायक हूं। मैं आपकी कैसे मदद कर सकता हूं?",
+        namePrompt: "आपका नाम क्या है?",
+        emailPrompt: "आपका ईमेल पता क्या है?",
+        ticketPrompt: "आप कौन सा टिकट बुक करना चाहेंगे?",
+        quantityPrompt: "आपको कितने टिकट चाहिए?",
+        datePrompt: "आप कब विजिट करना चाहेंगे?",
+        confirmation: "बढ़िया! मैं आपकी बुकिंग की पुष्टि करता हूं:",
+        total: "कुल राशि",
+        confirmBooking: "क्या मैं बुकिंग जारी रखूं?",
+        paymentSuccess: "भुगतान सफल! 🎉",
+        ticketSent: "आपके ई-टिकट आपके ईमेल पर भेज दिए गए हैं। अपनी यात्रा का आनंद लें! 🏛️",
+        error: "उफ़! कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+        yes: "हां, पुष्टि करें",
+        no: "नहीं, रद्द करें",
+        help: "मदद चाहिए?",
+        restart: "फिर से शुरू करें"
+    },
+    es: {
+        greeting: "¡Hola! Soy tu asistente de tickets AI. ¿Cómo puedo ayudarte hoy?",
+        namePrompt: "¿Cuál es tu nombre?",
+        emailPrompt: "¿Cuál es tu dirección de correo electrónico?",
+        ticketPrompt: "¿Qué ticket te gustaría reservar?",
+        quantityPrompt: "¿Cuántos tickets necesitas?",
+        datePrompt: "¿Cuándo te gustaría visitar?",
+        confirmation: "¡Genial! Permíteme confirmar los detalles de tu reserva:",
+        total: "Cantidad Total",
+        confirmBooking: "¿Procedo con la reserva?",
+        paymentSuccess: "¡Pago Exitoso! 🎉",
+        ticketSent: "Tus e-tickets han sido enviados a tu correo. ¡Disfruta tu visita! 🏛️",
+        error: "¡Ups! Algo salió mal. Por favor intenta de nuevo.",
+        yes: "Sí, Confirmar",
+        no: "No, Cancelar",
+        help: "¿Necesitas Ayuda?",
+        restart: "Empezar de Nuevo"
+    },
+    fr: {
+        greeting: "Bonjour! Je suis votre assistant de billets IA. Comment puis-je vous aider aujourd'hui?",
+        namePrompt: "Quel est votre nom?",
+        emailPrompt: "Quelle est votre adresse e-mail?",
+        ticketPrompt: "Quel billet souhaitez-vous réserver?",
+        quantityPrompt: "Combien de billets avez-vous besoin?",
+        datePrompt: "Quand souhaitez-vous visiter?",
+        confirmation: "Super! Permettez-moi de confirmer les détails de votre réservation:",
+        total: "Montant Total",
+        confirmBooking: "Dois-je procéder à la réservation?",
+        paymentSuccess: "Paiement Réussi! 🎉",
+        ticketSent: "Vos e-billets ont été envoyés à votre e-mail. Profitez de votre visite! 🏛️",
+        error: "Oups! Quelque chose s'est mal passé. Veuillez réessayer.",
+        yes: "Oui, Confirmer",
+        no: "Non, Annuler",
+        help: "Besoin d'Aide?",
+        restart: "Recommencer"
+    },
+    de: {
+        greeting: "Hallo! Ich bin Ihr KI-Ticket-Assistent. Wie kann ich Ihnen heute helfen?",
+        namePrompt: "Wie ist Ihr Name?",
+        emailPrompt: "Wie lautet Ihre E-Mail-Adresse?",
+        ticketPrompt: "Welches Ticket möchten Sie buchen?",
+        quantityPrompt: "Wie viele Tickets benötigen Sie?",
+        datePrompt: "Wann möchten Sie uns besuchen?",
+        confirmation: "Großartig! Lassen Sie mich Ihre Buchungsdetails bestätigen:",
+        total: "Gesamtbetrag",
+        confirmBooking: "Soll ich mit der Buchung fortfahren?",
+        paymentSuccess: "Zahlung Erfolgreich! 🎉",
+        ticketSent: "Ihre E-Tickets wurden an Ihre E-Mail gesendet. Genießen Sie Ihren Besuch! 🏛️",
+        error: "Hoppla! Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+        yes: "Ja, Bestätigen",
+        no: "Nein, Abbrechen",
+        help: "Hilfe Benötigt?",
+        restart: "Neu Starten"
+    }
+};
+
+// Pricing Logic
+const prices = {
+    "General Entry": 200,
+    "Exhibition Show": 350,
+    "Premium Guided Tour": 600,
+    "Student Pass": 150,
+    "Family Package": 700
+};
+
+// Set minimum date to today
+document.getElementById('visitDate').min = new Date().toISOString().split('T')[0];
+
+// Hero Typing Effect
+const heroText = "Smart AI Ticketing for Modern Museums";
+let heroIndex = 0;
+function typeHero() {
+    if (heroIndex < heroText.length) {
+        document.getElementById("typingText").innerHTML += heroText.charAt(heroIndex);
+        heroIndex++;
+        setTimeout(typeHero, 50);
+    }
+}
+typeHero();
+
+// Smooth Scroll Functions
+function scrollToBooking() {
+    document.getElementById("bookingSection").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function scrollToAnalytics() {
+    document.getElementById("analyticsSection").scrollIntoView({ behavior: "smooth" });
+}
+
+// Language Selection
+function setLanguage(lang) {
+    currentLanguage = lang;
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Update placeholders
+    const placeholders = {
+        en: { name: "Your Name", email: "Email Address", quantity: "Number of Tickets", date: "Visit Date" },
+        hi: { name: "आपका नाम", email: "ईमेल पता", quantity: "टिकटों की संख्या", date: "यात्रा की तारीख" },
+        es: { name: "Tu Nombre", email: "Correo Electrónico", quantity: "Número de Tickets", date: "Fecha de Visita" },
+        fr: { name: "Votre Nom", email: "Adresse E-mail", quantity: "Nombre de Billets", date: "Date de Visite" },
+        de: { name: "Ihr Name", email: "E-Mail-Adresse", quantity: "Anzahl der Tickets", date: "Besuchsdatum" }
+    };
+    
+    document.getElementById('name').placeholder = placeholders[lang].name;
+    document.getElementById('email').placeholder = placeholders[lang].email;
+    document.getElementById('quantity').placeholder = placeholders[lang].quantity;
+}
+
+// Chat Functions
+function addMessage(text, type = "bot") {
+    const chatbox = document.getElementById("chatbox");
+    const msg = document.createElement("div");
+    msg.classList.add("message", type);
+    msg.innerHTML = text;
+    chatbox.appendChild(msg);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const chatbox = document.getElementById("chatbox");
+    const indicator = document.createElement("div");
+    indicator.classList.add("typing-indicator");
+    indicator.id = "typingIndicator";
+    indicator.innerHTML = "<span></span><span></span><span></span>";
+    chatbox.appendChild(indicator);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const indicator = document.getElementById("typingIndicator");
+    if (indicator) indicator.remove();
+}
+
+function showQuickActions(actions) {
+    const container = document.getElementById("quickActions");
+    container.innerHTML = "";
+    container.style.display = "flex";
+    
+    actions.forEach(action => {
+        const btn = document.createElement("button");
+        btn.classList.add("quick-action-btn");
+        btn.innerText = action.text;
+        btn.onclick = action.callback;
+        container.appendChild(btn);
+    });
+}
+
+function hideQuickActions() {
+    document.getElementById("quickActions").style.display = "none";
+}
+
+// Start ChatBot
+let bookingStartTime;
+
+function startChatBot() {
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const ticketType = document.getElementById("ticketType").value;
+    const quantity = parseInt(document.getElementById("quantity").value);
+    const visitDate = document.getElementById("visitDate").value;
+    
+    // Validation
+    if (!name) {
+        alert("Please enter your name");
+        return;
+    }
+    
+    if (!email || !email.includes('@')) {
+        alert("Please enter a valid email address");
+        return;
+    }
+    
+    if (!ticketType) {
+        alert("Please select a ticket type");
+        return;
+    }
+    
+    if (!quantity || quantity < 1 || quantity > 10) {
+        alert("Please enter a valid number of tickets (1-10)");
+        return;
+    }
+    
+    if (!visitDate) {
+        alert("Please select a visit date");
+        return;
+    }
+    
+    // Store booking data
+    bookingData = {
+        name: name,
+        email: email,
+        ticketType: ticketType.split(' - ')[0],
+        quantity: quantity,
+        visitDate: visitDate,
+        price: prices[ticketType.split(' - ')[0]],
+        total: prices[ticketType.split(' - ')[0]] * quantity
+    };
+    
+    bookingStartTime = Date.now();
+    
+    // Hide form and show chat
+    document.getElementById("formSection").style.display = "none";
+    document.getElementById("chatbox").style.display = "flex";
+    document.getElementById("chatInput").style.display = "flex";
+    
+    // Start conversation
+    setTimeout(() => {
+        addMessage(translations[currentLanguage].greeting);
+    }, 500);
+    
+    setTimeout(() => {
+        showTypingIndicator();
+    }, 1500);
+    
+    setTimeout(() => {
+        hideTypingIndicator();
+        addMessage(`${translations[currentLanguage].confirmation}<br><br>
+            👤 Name: ${bookingData.name}<br>
+            📧 Email: ${bookingData.email}<br>
+            🎟️ Ticket: ${bookingData.ticketType}<br>
+            🔢 Quantity: ${bookingData.quantity}<br>
+            📅 Date: ${bookingData.visitDate}<br>
+            💰 ${translations[currentLanguage].total}: ₹${bookingData.total}`);
+    }, 2500);
+    
+    setTimeout(() => {
+        addMessage(translations[currentLanguage].confirmBooking);
+        showQuickActions([
+            { text: translations[currentLanguage].yes, callback: confirmBooking },
+            { text: translations[currentLanguage].no, callback: cancelBooking }
+        ]);
+    }, 3500);
+}
+
+function confirmBooking() {
+    hideQuickActions();
+    addMessage(translations[currentLanguage].yes, "user");
+    
+    showTypingIndicator();
+    setTimeout(() => {
+        hideTypingIndicator();
+        addMessage("Proceeding to payment gateway... 💳");
+        openPaymentModal();
+    }, 1000);
+}
+
+function cancelBooking() {
+    hideQuickActions();
+    addMessage(translations[currentLanguage].no, "user");
+    
+    showTypingIndicator();
+    setTimeout(() => {
+        hideTypingIndicator();
+        addMessage("Booking cancelled. Feel free to start over if you'd like! 😊");
+        showQuickActions([
+            { text: translations[currentLanguage].restart, callback: restartBooking }
+        ]);
+    }, 1000);
+}
+
+function restartBooking() {
+    location.reload();
+}
+
+// Send Message (for additional queries with AI)
+async function sendMessage() {
+    const input = document.getElementById("userMessage");
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    addMessage(message, "user");
+    input.value = "";
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Call AI for response
+    try {
+        const aiResponse = await callGeminiAI(message);
+        hideTypingIndicator();
+        addMessage(aiResponse);
+    } catch (error) {
+        hideTypingIndicator();
+        addMessage("I apologize, but I'm having trouble processing your request right now. Please try again or contact our support team.");
+        console.error('Error in sendMessage:', error);
+    }
+}
+
+// Payment Modal Functions
+function openPaymentModal() {
+    const modal = document.getElementById("paymentModal");
+    const details = document.getElementById("paymentDetails");
+    
+    details.innerHTML = `
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 15px;">Order Summary</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Ticket Type:</span>
+                <span>${bookingData.ticketType}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Quantity:</span>
+                <span>${bookingData.quantity}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Price per ticket:</span>
+                <span>₹${bookingData.price}</span>
+            </div>
+            <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 600;">
+                <span>Total Amount:</span>
+                <span style="color: #00c6ff;">₹${bookingData.total}</span>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = "block";
+}
+
+function closePaymentModal() {
+    document.getElementById("paymentModal").style.display = "none";
+}
+
+function selectPaymentMethod(method) {
+    selectedPaymentMethod = method;
+    
+    // Update UI
+    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+    event.target.closest('.payment-method').classList.add('selected');
+    
+    // Show relevant input fields
+    document.getElementById('cardDetails').style.display = method === 'card' ? 'block' : 'none';
+    document.getElementById('upiDetails').style.display = method === 'upi' ? 'block' : 'none';
+    document.getElementById('walletDetails').style.display = method === 'wallet' ? 'block' : 'none';
+}
+
+function processPayment() {
+    // Hide payment form and show processing
+    document.getElementById('paymentFormSection').style.display = 'none';
+    document.getElementById('processingSection').style.display = 'block';
+    
+    // Simulate payment processing
+    setTimeout(() => {
+        // Payment successful
+        closePaymentModal();
+        
+        showTypingIndicator();
+        setTimeout(() => {
+            hideTypingIndicator();
+            addMessage(translations[currentLanguage].paymentSuccess);
+        }, 500);
+        
+        setTimeout(() => {
+            showTypingIndicator();
+        }, 1500);
+        
+        setTimeout(() => {
+            hideTypingIndicator();
+            addMessage(translations[currentLanguage].ticketSent);
+            
+            // Update analytics
+            const bookingTime = Math.round((Date.now() - bookingStartTime) / 1000);
+            analytics.totalBookings++;
+            analytics.totalRevenue += bookingData.total;
+            analytics.bookingTimes.push(bookingTime);
+            analytics.ticketCounts[bookingData.ticketType] = (analytics.ticketCounts[bookingData.ticketType] || 0) + bookingData.quantity;
+            
+            saveAnalytics();
+            updateAnalyticsDashboard();
+            
+            // Show final actions
+            showQuickActions([
+                { text: "Download Ticket", callback: downloadTicket },
+                { text: translations[currentLanguage].restart, callback: restartBooking }
+            ]);
+        }, 2500);
+        
+    }, 3000);
+}
+
+function downloadTicket() {
+    addMessage("Downloading your ticket... 📥", "user");
+    
+    setTimeout(() => {
+        addMessage("Your ticket has been downloaded! Check your downloads folder. 🎫");
+        // In a real implementation, this would trigger an actual download
+        alert("Ticket Download Simulated!\n\nBooking Details:\n" + 
+              "Name: " + bookingData.name + "\n" +
+              "Email: " + bookingData.email + "\n" +
+              "Ticket: " + bookingData.ticketType + "\n" +
+              "Quantity: " + bookingData.quantity + "\n" +
+              "Date: " + bookingData.visitDate + "\n" +
+              "Booking ID: MUS-" + Date.now());
+    }, 1000);
+}
+
+// Analytics Functions
+function updateAnalyticsDashboard() {
+    document.getElementById('totalBookings').textContent = analytics.totalBookings;
+    document.getElementById('totalRevenue').textContent = '₹' + analytics.totalRevenue.toLocaleString();
+    
+    const avgTime = analytics.bookingTimes.length > 0 
+        ? Math.round(analytics.bookingTimes.reduce((a, b) => a + b, 0) / analytics.bookingTimes.length)
+        : 0;
+    document.getElementById('avgBookingTime').textContent = avgTime + 's';
+    
+    const popularTicket = Object.keys(analytics.ticketCounts).length > 0
+        ? Object.keys(analytics.ticketCounts).reduce((a, b) => 
+            analytics.ticketCounts[a] > analytics.ticketCounts[b] ? a : b)
+        : '-';
+    document.getElementById('popularTicket').textContent = popularTicket;
+}
+
+// Particles Animation
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+let particles = [];
+
+class Particle {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 0.5 - 0.25;
+        this.speedY = Math.random() * 0.5 - 0.25;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        
+        if (this.x > canvas.width) this.x = 0;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.y > canvas.height) this.y = 0;
+        if (this.y < 0) this.y = canvas.height;
+    }
+    draw() {
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function initParticles() {
+    particles = [];
+    const particleCount = window.innerWidth < 768 ? 50 : 100;
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+    }
+}
+initParticles();
+
+function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+    requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// Gallery Functions
+function openGallery() {
+    document.getElementById("galleryModal").style.display = "block";
+}
+
+function closeGallery() {
+    document.getElementById("galleryModal").style.display = "none";
+}
+
+function filterGallery(type) {
+    const items = document.querySelectorAll('.gallery-item');
+    const buttons = document.querySelectorAll('#galleryModal .lang-btn');
+    
+    // Update active button
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Filter items
+    items.forEach(item => {
+        if (type === 'all' || item.dataset.type === type) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Initialize
+window.addEventListener('load', () => {
+    loadAnalytics();
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById("paymentModal");
+    const galleryModal = document.getElementById("galleryModal");
+    if (event.target == modal) {
+        closePaymentModal();
+    }
+    if (event.target == galleryModal) {
+        closeGallery();
+    }
+}
+
+</script>
+
+</body>
+</html>
