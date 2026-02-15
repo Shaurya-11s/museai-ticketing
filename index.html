@@ -716,7 +716,7 @@ let analytics = {
 
 // ===== GOOGLE GEMINI AI CONFIGURATION =====
 // Replace this with your actual API key from https://makersuite.google.com/app/apikey
-const GEMINI_API_KEY = 'AIzaSyBpAKOVddkpmhAIDMRLxK-5CL7BYBYsTgU';
+const GEMINI_API_KEY = 'AIzaSyDL3LRRBetTngXZuvMmhKM7NOrwrB9uMUM';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 // AI Context for museum assistant
 const AI_CONTEXT = `You are a helpful AI assistant for MuseAI, a modern museum ticketing system. Your role is to help visitors with:
@@ -764,7 +764,7 @@ Keep responses friendly, concise (2-3 sentences), and helpful. If asked about bo
 // Function to call Gemini AI (UPDATED FOR v1 API)
 async function callGeminiAI(userMessage) {
 
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'AIzaSyBpAKOVddkpmhAIDMRLxK-5CL7BYBYsTgU') {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'AIzaSyDL3LRRBetTngXZuvMmhKM7NOrwrB9uMUM') {
         console.warn('Gemini API key not set.');
         return getFallbackResponse(userMessage);
     }
